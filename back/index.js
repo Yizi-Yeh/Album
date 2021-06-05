@@ -2,10 +2,11 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
-import connectMongo from 'connect-mongo'
+import connectMongo from 'connect-mongo';
 import cors from 'cors'
-import session, { Cookie } from 'express-session'
+import session from 'express-session'
 
+// 環境變數套件
 dotenv.config()
 
 mongoose.connect(process.env.DBURL,{ useNewUrlParser: true, useUnifiedTopology: true })
@@ -42,30 +43,38 @@ app.use(cors({
     credentials:true
 }))
 
-const MongoStore = connectMongo(session)
+const MongoStore = connectMongo(session);
 
 const sessionSettings = {
-    secret:'album',
-    // session 儲存的地方
-    store: new MongoStore({mongooseConnection: mongoose.connect}),
+    secret: 'album',
+    store: new MongoStore({ mongooseConnection: mongoose.connection }),
     cookie: {
-        maxAge: 1000 * 60 * 30,
-        saveUninitialized: false,
-        rolling:true,
-        resave:true
-    }
-}
+      maxAge: 1000 * 60 * 30
+    },
+    saveUninitialized: false,
+    rolling: true,
+    resave: true
+  }
+
 
 if(process.env.DEV === 'false') {
     // 如果不是本機的開發環境，允許不同網域的認證cookie
     // sameSite => cookie需要在同個網域
     sessionSettings.cookie.sameSite = 'none'
-    // 若sameSite 要設為none，secure必須為true
+    // 若sameSite，設為none，secure必須為true
+    // 允許不同網域的認證，但一定需要https
     sessionSettings.cookie.secure = true 
 }
 
 app.use(session(sessionSettings))
 
+// 部署 heroku 的設定
+app.set('trust proxy',1)
+
 app.listen(process.env.PORT,() =>{
     console.log('server started')
 })
+
+
+
+
