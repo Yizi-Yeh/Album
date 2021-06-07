@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 import connectMongo from 'connect-mongo';
 import cors from 'cors'
 import session from 'express-session'
+import routerUser from './routes/users.js'
+import routerAlbum from './routes/albums.js'
+
 
 // 環境變數套件
 dotenv.config()
@@ -67,6 +70,8 @@ if(process.env.DEV === 'false') {
 }
 
 app.use(session(sessionSettings))
+app.use('/users',routerUser)
+app.use('/album',routerAlbum)
 
 // 部署 heroku 的設定
 app.set('trust proxy',1)
